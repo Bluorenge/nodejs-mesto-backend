@@ -29,7 +29,8 @@ export const createUser = async (
     const { name, about, avatar } = req.body;
 
     const user = await UserModel.create({ name, about, avatar });
-    res.status(StatusCode.CREATED).status(StatusCode.CREATED).send(user);
+
+    res.status(StatusCode.CREATED).send(user);
   } catch (err: any) {
     if (err.name === "ValidationError") {
       next(
@@ -84,9 +85,10 @@ export const updateUser = async (
 ) => {
   try {
     const { name, about } = req.body;
+    const userId = req.user!._id;
 
     const user = await UserModel.findByIdAndUpdate(
-      req.user?._id,
+      userId,
       { name, about },
       { new: true, runValidators: true }
     );

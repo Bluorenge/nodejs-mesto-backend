@@ -9,9 +9,9 @@ import {
 
 const cardsRouter = Router();
 
-cardsRouter.post("/cards", createCard);
-cardsRouter.get("/cards", getCards);
-cardsRouter.put("/cards/:cardId/likes", setCardLike);
-cardsRouter.delete("/cards/:cardId", deleteCard);
+cardsRouter.post("", createCard);
+cardsRouter.get("", getCards);
+cardsRouter.put("/:cardId/likes", setCardLike);
+cardsRouter.delete("/:cardId", deleteCard);
 
 export default cardsRouter;
