@@ -1,91 +1,119 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 import CardModel from "../models/card";
+import { StatusCode } from "../constants/status-codes";
+import { HttpError } from "../errors/http-error";
 
 // Получение всех карточек
-export const getCards = async (req: Request, res: Response) => {
+export const getCards = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const cards = await CardModel.find({});
-    res.send(cards);
+
+    res.status(StatusCode.OK).send(cards);
   } catch (err: any) {
-    res.status(500).send({
-      message: "Произошла ошибка при получении карточек",
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Создание новой карточки
-export const createCard = async (req: Request, res: Response) => {
+export const createCard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { name, link } = req.body;
+    const userId = req.user!._id;
 
-    const card = await CardModel.create({ name, link });
-    res.status(201).send(card);
+    const card = await CardModel.create({ name, link, owner: userId });
+
+    res.status(StatusCode.CREATED).send(card);
   } catch (err: any) {
     if (err.name === "ValidationError") {
-      res.status(400).send({
-        message: "Переданы некорректные данные при создании карточки",
-        error: err.message,
-      });
+      next(
+        new HttpError(
+          "Переданы некорректные данные при создании карточки",
+          StatusCode.BAD_REQUEST
+        )
+      );
     } else {
-      res.status(500).send({
-        message: "Произошла ошибка при создании карточки",
-        error: err.message,
-      });
+      next(err);
     }
   }
 };
 
 // Удаление карточки по ID
-export const deleteCard = async (req: Request, res: Response) => {
+export const deleteCard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { cardId } = req.params;
 
     const card = await CardModel.findByIdAndDelete(cardId);
 
     if (!card) {
-      return res
-        .status(404)
-        .send({ message: "Карточка с указанным ID не найдена" });
+      throw new HttpError(
+        "Карточка с указанным ID не найдена",
+        StatusCode.NOT_FOUND
+      );
     }
 
-    res.send({ message: "Карточка успешно удалена", data: card });
+    res
+      .status(StatusCode.OK)
+      .send({ message: "Карточка успешно удалена", data: card });
   } catch (err: any) {
     if (err.name === "CastError") {
-      res.status(400).send({
-        message: "Передан некорректный ID карточки",
-        error: err.message,
-      });
+      next(
+        new HttpError(
+          "Передан некорректный ID карточки",
+          StatusCode.BAD_REQUEST
+        )
+      );
     } else {
-      res.status(500).send({
-        message: "Произошла ошибка при удалении карточки",
-        error: err.message,
-      });
+      next(err);
     }
   }
 };
 
-export const setCardLike = async (req: Request, res: Response) => {
+export const setCardLike = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { cardId } = req.params;
+    const userId = req.user!._id;
 
     const card = await CardModel.findByIdAndUpdate(
       cardId,
+      { $addToSet: { likes: userId } },
       { new: true }
     );
-    res.send(card);
+
+    if (!card) {
+      throw new HttpError(
+        "Карточка с указанным ID не найдена",
+        StatusCode.NOT_FOUND
+      );
+    }
+
+    res.status(StatusCode.OK).send(card);
   } catch (err: any) {
     if (err.name === "CastError") {
-      res.status(400).send({
-        message: "Передан некорректный ID карточки",
-        error: err.message,
-      });
+      next(
+        new HttpError(
+          "Передан некорректный ID карточки",
+          StatusCode.BAD_REQUEST
+        )
+      );
     } else {
-      res.status(500).send({
-        message: "Произошла ошибка при лайке карточки",
-        error: err.message,
-      });
+      next(err);
     }
   }
 };

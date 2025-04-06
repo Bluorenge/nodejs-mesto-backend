@@ -16,7 +16,7 @@ export const userMiddleware = (
   next: NextFunction
 ) => {
   req.user = {
-    _id: "67e5df9e4fc78beebaec5711", // ID пользователя
+    _id: "67f2993d7377d290d2ac3095", // ID пользователя
   };
   next();
 };
