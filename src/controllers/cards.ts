@@ -1,14 +1,14 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response } from 'express';
 
-import CardModel from "../models/card";
-import { StatusCode } from "../constants/status-codes";
-import { HttpError } from "../errors/http-error";
+import CardModel from '../models/card';
+import StatusCode from '../constants/status-codes';
+import HttpError from '../errors/http-error';
 
 // Получение всех карточек
 export const getCards = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const cards = await CardModel.find({});
@@ -23,7 +23,7 @@ export const getCards = async (
 export const createCard = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { name, link } = req.body;
@@ -33,12 +33,12 @@ export const createCard = async (
 
     res.status(StatusCode.CREATED).send(card);
   } catch (err: any) {
-    if (err.name === "ValidationError") {
+    if (err.name === 'ValidationError') {
       next(
         new HttpError(
-          "Переданы некорректные данные при создании карточки",
-          StatusCode.BAD_REQUEST
-        )
+          'Переданы некорректные данные при создании карточки',
+          StatusCode.BAD_REQUEST,
+        ),
       );
     } else {
       next(err);
@@ -50,7 +50,7 @@ export const createCard = async (
 export const deleteCard = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { cardId } = req.params;
@@ -59,21 +59,21 @@ export const deleteCard = async (
 
     if (!card) {
       throw new HttpError(
-        "Карточка с указанным ID не найдена",
-        StatusCode.NOT_FOUND
+        'Карточка с указанным ID не найдена',
+        StatusCode.NOT_FOUND,
       );
     }
 
     res
       .status(StatusCode.OK)
-      .send({ message: "Карточка успешно удалена", data: card });
+      .send({ message: 'Карточка успешно удалена', data: card });
   } catch (err: any) {
-    if (err.name === "CastError") {
+    if (err.name === 'CastError') {
       next(
         new HttpError(
-          "Передан некорректный ID карточки",
-          StatusCode.BAD_REQUEST
-        )
+          'Передан некорректный ID карточки',
+          StatusCode.BAD_REQUEST,
+        ),
       );
     } else {
       next(err);
@@ -84,7 +84,7 @@ export const deleteCard = async (
 export const setCardLike = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { cardId } = req.params;
@@ -93,24 +93,24 @@ export const setCardLike = async (
     const card = await CardModel.findByIdAndUpdate(
       cardId,
       { $addToSet: { likes: userId } },
-      { new: true }
+      { new: true },
     );
 
     if (!card) {
       throw new HttpError(
-        "Карточка с указанным ID не найдена",
-        StatusCode.NOT_FOUND
+        'Карточка с указанным ID не найдена',
+        StatusCode.NOT_FOUND,
       );
     }
 
     res.status(StatusCode.OK).send(card);
   } catch (err: any) {
-    if (err.name === "CastError") {
+    if (err.name === 'CastError') {
       next(
         new HttpError(
-          "Передан некорректный ID карточки",
-          StatusCode.BAD_REQUEST
-        )
+          'Передан некорректный ID карточки',
+          StatusCode.BAD_REQUEST,
+        ),
       );
     } else {
       next(err);
