@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import userMiddleware from './middlewares/user';
 import routes from './routes';
 import errorHandler from './middlewares/error-handler';
+import limiter from './middlewares/limiter';
 
 // Слушаем 3000 порт
 const { PORT = 3000, MONGO_URL = 'mongodb://localhost:27017/mestodb' } = process.env;
@@ -16,6 +17,7 @@ mongoose.connect(MONGO_URL);
 
 app.use(express.json());
 app.use(userMiddleware);
+app.use(limiter);
 
 app.use('/', routes);
 

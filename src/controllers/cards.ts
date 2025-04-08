@@ -117,3 +117,40 @@ export const setCardLike = async (
     }
   }
 };
+
+export const deleteCardLike = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { cardId } = req.params;
+    const userId = req.user!._id;
+
+    const card = await CardModel.findByIdAndUpdate(
+      cardId,
+      { $pull: { likes: userId } },
+      { new: true },
+    );
+
+    if (!card) {
+      throw new HttpError(
+        'Карточка с указанным ID не найдена',
+        StatusCode.NOT_FOUND,
+      );
+    }
+
+    res.status(StatusCode.OK).send(card);
+  } catch (err: any) {
+    if (err.name === 'CastError') {
+      next(
+        new HttpError(
+          'Передан некорректный ID карточки',
+          StatusCode.BAD_REQUEST,
+        ),
+      );
+    } else {
+      next(err);
+    }
+  }
+};
